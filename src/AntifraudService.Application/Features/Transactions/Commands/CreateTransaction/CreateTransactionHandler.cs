@@ -35,28 +35,20 @@ namespace AntifraudService.Application.Features.Transactions.Commands.CreateTran
                 SourceAccountId = request.SourceAccountId,
                 TargetAccountId = request.TargetAccountId,
                 TransferTypeId = request.TransferTypeId,
-                Value = request.Value
+                Value = request.Value,
+                CreatedAt = DateTime.UtcNow
             };
 
             await _transactionRepository.AddTransaction(transaction);
 
-            var isApproved = await _transactionValidationService.ValidateTransaction(transaction);
-            if (isApproved == TransactionStatus.Approved)
-            {
-                transaction.Status = TransactionStatus.Approved;
-            }
-            else
-            {
-                transaction.Status = TransactionStatus.Rejected;
-            }
-
-            await _transactionRepository.UpdateTransaction(transaction);
             try
             {
                 await _messageProducer.Produce(new TransactionMessage
                 {
                     TransactionExternalId = transaction.Id,
-                    Status = transaction.Status.ToString()
+                    SourceAccountId = transaction.SourceAccountId,
+                    Value = transaction.Value,
+                    CreatedAt = transaction.CreatedAt
                 });
             }
             catch (Exception ex)

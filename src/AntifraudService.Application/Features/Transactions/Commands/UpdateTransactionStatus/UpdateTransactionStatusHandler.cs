@@ -34,11 +34,6 @@ public class UpdateTransactionStatusCommandHandler : IRequestHandler<UpdateTrans
         transaction.Status = status;
 
         await _transactionRepository.UpdateTransaction(transaction);
-        await _messageProducer.Produce(new TransactionMessage
-        {
-            TransactionExternalId = transaction.Id,
-            Status = transaction.Status.ToString()
-        });
 
         return true;
     }
