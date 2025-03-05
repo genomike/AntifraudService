@@ -33,7 +33,7 @@ namespace AntifraudService.Infrastructure.Persistence.Configurations
 
             builder.Property(t => t.CreatedAt)
                 .IsRequired()
-                .HasDefaultValueSql("CURRENT_TIMESTAMP"); // También podemos hacer que CreatedAt se genere automáticamente
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.ToTable("Transactions");
         }

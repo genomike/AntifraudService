@@ -32,12 +32,10 @@ namespace AntifraudService.Application.Features.Transactions.Commands.CreateTran
         {
             var transaction = new Transaction
             {
-                Id = Guid.NewGuid(),
                 SourceAccountId = request.SourceAccountId,
                 TargetAccountId = request.TargetAccountId,
                 TransferTypeId = request.TransferTypeId,
-                Value = request.Value,
-                CreatedAt = DateTime.UtcNow
+                Value = request.Value
             };
 
             await _transactionRepository.AddTransaction(transaction);
@@ -61,7 +59,7 @@ namespace AntifraudService.Application.Features.Transactions.Commands.CreateTran
                 });
             }
             catch (Exception ex) {
-                _logger.LogError(ex, "Hubieron errores produciendo el mensaje para Kafka, pero la transacción se guardo en la BD");
+                _logger.LogError(ex, "Hubieron errores produciendo el mensaje para Kafka, pero la transacciÃ³n se guardo en la BD");
             }
 
             return transaction.Id;

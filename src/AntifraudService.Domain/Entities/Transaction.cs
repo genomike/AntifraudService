@@ -11,10 +11,5 @@ namespace AntifraudService.Domain.Entities
         public decimal Value { get; set; }
         public TransactionStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
-
-        public Transaction()
-        {
-            Status = TransactionStatus.Pending;
-        }
     }
 }
