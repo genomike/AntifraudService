@@ -1,5 +1,6 @@
 using AntifraudService.Application.DTOs;
 using AntifraudService.Application.Features.Transactions.Commands.CreateTransaction;
+using AntifraudService.Application.Features.Transactions.Commands.UpdateTransactionStatus;
 using AntifraudService.Application.Features.Transactions.Queries.GetTransaction;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +48,23 @@ namespace AntifraudService.Api.Controllers
                 return NotFound();
             }
             return Ok(transaction);
+        }
+
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateTransactionStatus(Guid id, [FromBody] TransactionStatusDto statusDto)
+        {
+            statusDto.TransactionExternalId = id;
+            
+            var command = new UpdateTransactionStatusCommand(
+                statusDto.TransactionExternalId,
+                statusDto.Status);
+            
+            var result = await _mediator.Send(command);
+            
+            if (!result)
+                return NotFound($"Transacción con ID {id} no encontrada");
+            
+            return NoContent();
         }
     }
 }

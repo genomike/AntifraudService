@@ -1,17 +1,16 @@
+using MediatR;
 using System;
 
 namespace AntifraudService.Application.Features.Transactions.Commands.UpdateTransactionStatus
 {
-    public class UpdateTransactionStatusCommand
+    public class UpdateTransactionStatusCommand : IRequest<bool>
     {
-        public Guid TransactionExternalId { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string Status { get; set; }
+        public Guid TransactionExternalId { get; }
+        public string Status { get; }
 
-        public UpdateTransactionStatusCommand(Guid transactionExternalId, DateTime createdAt, string status)
+        public UpdateTransactionStatusCommand(Guid transactionExternalId, string status)
         {
             TransactionExternalId = transactionExternalId;
-            CreatedAt = createdAt;
             Status = status;
         }
     }

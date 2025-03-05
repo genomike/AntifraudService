@@ -25,13 +25,10 @@ namespace AntifraudService.Application.Features.Transactions.Queries.GetTransact
 
             return new TransactionDto
             {
-                Id = transaction.Id,
                 SourceAccountId = transaction.SourceAccountId,
                 TargetAccountId = transaction.TargetAccountId,
                 TransferTypeId = transaction.TransferTypeId,
                 Value = transaction.Value,
-                Status = transaction.Status.ToString(),
-                CreatedAt = transaction.CreatedAt
             };
         }
     }

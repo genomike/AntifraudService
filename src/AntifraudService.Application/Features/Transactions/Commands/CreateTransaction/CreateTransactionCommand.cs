@@ -3,7 +3,7 @@ using System;
 
 namespace AntifraudService.Application.Features.Transactions.Commands.CreateTransaction
 {
-    public class CreateTransactionCommand : IRequest<Guid> // o IRequest<TipoDeRetorno>
+    public class CreateTransactionCommand : IRequest<Guid>
     {
         public Guid SourceAccountId { get; }
         public Guid TargetAccountId { get; }

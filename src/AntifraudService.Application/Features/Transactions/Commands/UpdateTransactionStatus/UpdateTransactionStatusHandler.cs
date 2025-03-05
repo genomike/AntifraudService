@@ -4,19 +4,20 @@ using AntifraudService.Domain.Exceptions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 
-public class UpdateTransactionStatusHandler
+public class UpdateTransactionStatusCommandHandler : IRequestHandler<UpdateTransactionStatusCommand, bool>
 {
     private readonly ITransactionRepository _transactionRepository;
     private readonly IMessageProducer _messageProducer;
 
-    public UpdateTransactionStatusHandler(ITransactionRepository transactionRepository, IMessageProducer messageProducer)
+    public UpdateTransactionStatusCommandHandler(ITransactionRepository transactionRepository, IMessageProducer messageProducer)
     {
         _transactionRepository = transactionRepository;
         _messageProducer = messageProducer;
     }
 
-    public async Task Handle(UpdateTransactionStatusCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(UpdateTransactionStatusCommand request, CancellationToken cancellationToken)
     {
         var transaction = await _transactionRepository.GetTransactionById(request.TransactionExternalId);
 
@@ -38,5 +39,7 @@ public class UpdateTransactionStatusHandler
             TransactionExternalId = transaction.Id,
             Status = transaction.Status.ToString()
         });
+
+        return true;
     }
 }
