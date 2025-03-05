@@ -37,3 +37,16 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=antifraud_db;Username=postgres;Password=postgres
       - Kafka__BootstrapServers=kafka:29092
+  antifraud_worker:
+    build:
+      context: ./src/AntifraudService.Worker
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - kafka
+      - antifraud_service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=antifraud_db;Username=postgres;Password=postgres
+      - Kafka__BootstrapServers=kafka:29092
+      - ApiSettings__BaseUrl=http://antifraud_service

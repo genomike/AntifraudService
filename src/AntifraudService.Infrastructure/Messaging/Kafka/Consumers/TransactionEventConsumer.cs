@@ -1,75 +1,65 @@
 using AntifraudService.Application.Common.Interfaces;
-using AntifraudService.Domain.Entities;
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace AntifraudService.Infrastructure.Messaging.Kafka.Consumers
 {
-    public class TransactionEventConsumer
+    public class TransactionEventConsumer : IMessageConsumer
     {
-        private readonly ITransactionRepository _transactionRepository;
-        private readonly IMessageProducer _messageProducer;
-        private readonly string _topic = "transaction-events";
+        private readonly KafkaSettings _kafkaSettings;
+        private readonly ILogger<TransactionEventConsumer> _logger;
 
-        public TransactionEventConsumer(ITransactionRepository transactionRepository, IMessageProducer messageProducer)
+        public TransactionEventConsumer(KafkaSettings kafkaSettings, ILogger<TransactionEventConsumer> logger)
         {
-            _transactionRepository = transactionRepository;
-            _messageProducer = messageProducer;
+            _kafkaSettings = kafkaSettings;
+            _logger = logger;
         }
 
-        public void Start(CancellationToken cancellationToken)
+        public async Task ConsumeAsync(Func<string, Task> messageHandler, CancellationToken cancellationToken)
         {
             var config = new ConsumerConfig
             {
-                BootstrapServers = "localhost:9092",
-                GroupId = "transaction-consumer-group",
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                BootstrapServers = _kafkaSettings.BootstrapServers,
+                GroupId = "transaction-validation-group",
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                EnableAutoCommit = true
             };
 
-            using (var consumer = new ConsumerBuilder<Ignore, TransactionMessage>(config).Build())
-            {
-                consumer.Subscribe(_topic);
+            using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
+            consumer.Subscribe(_kafkaSettings.Topic);
 
-                try
+            _logger.LogInformation("Started consuming from topic: {topic}", _kafkaSettings.Topic);
+
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    while (!cancellationToken.IsCancellationRequested)
+                    try
                     {
-                        var cr = consumer.Consume(cancellationToken);
-                        ProcessMessage(cr.Message.Value);
+                        var consumeResult = consumer.Consume(cancellationToken);
+                        if (consumeResult != null)
+                        {
+                            _logger.LogInformation("Received message: {message}", consumeResult.Message.Value);
+                            await messageHandler(consumeResult.Message.Value);
+                        }
+                    }
+                    catch (ConsumeException ex)
+                    {
+                        _logger.LogError(ex, "Error consuming Kafka message");
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    consumer.Close();
-                }
             }
-        }
-
-        private async Task ProcessMessage(TransactionMessage message)
-        {
-            var transaction = await _transactionRepository.GetTransactionById(message.TransactionExternalId);
-            if (transaction != null)
+            catch (OperationCanceledException)
             {
-                var status = ValidateTransaction(transaction);
-                await _messageProducer.Produce(
-                    new TransactionMessage
-                    {
-                        TransactionExternalId = transaction.Id,
-                        Status = status.ToString()
-                    });
+                _logger.LogInformation("Consumer stopping due to cancellation");
             }
-        }
-
-        private TransactionStatus ValidateTransaction(Transaction transaction)
-        {
-            if (transaction.Value > 2000)
+            finally
             {
-                return TransactionStatus.Rejected;
+                consumer.Close();
             }
-
-            return TransactionStatus.Approved;
         }
     }
 }
