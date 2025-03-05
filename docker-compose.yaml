@@ -1,52 +1,69 @@
-version: "3.7"
+version: '3.8'
+
 services:
   postgres:
     image: postgres:14
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=antifraud_db
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=antifraud_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.5.3
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
   kafka:
-    image: confluentinc/cp-enterprise-kafka:5.5.3
-    depends_on: [zookeeper]
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_BROKER_ID: 1
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_JMX_PORT: 9991
-    ports:
-      - 9092:9092
-  antifraud_service:
+
+  api:
     build:
-      context: ./src/AntifraudService.Api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/AntifraudService.Api/Dockerfile
     ports:
       - "5000:80"
+      - "5001:443"
     depends_on:
       - postgres
       - kafka
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=antifraud_db;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Server=postgres;Port=5432;Database=antifraud_db;User Id=postgres;Password=postgres;
       - Kafka__BootstrapServers=kafka:29092
-  antifraud_worker:
+      - Kafka__Topic=transaction-events
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  worker:
     build:
-      context: ./src/AntifraudService.Worker
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/AntifraudService.Worker/Dockerfile
     depends_on:
       - postgres
       - kafka
-      - antifraud_service
+      - api
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=antifraud_db;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Server=postgres;Port=5432;Database=antifraud_db;User Id=postgres;Password=postgres;
       - Kafka__BootstrapServers=kafka:29092
-      - ApiSettings__BaseUrl=http://antifraud_service
+      - Kafka__Topic=transaction-events
+      - ApiSettings__BaseUrl=http://api
+      - DOTNET_ENVIRONMENT=Production
+
+volumes:
+  postgres_data:
