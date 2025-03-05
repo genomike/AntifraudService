@@ -21,11 +21,11 @@ namespace AntifraudService.Infrastructure.Persistence
             {
                 _logger.LogInformation("Creando la base de datos si esta no existe");
                 _context.Database.EnsureCreated();
-                _logger.LogInformation("Inicializaci�n de base de datos completada exitosamente");
+                _logger.LogInformation("Inicialización de base de datos completada exitosamente");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ocurri� un error inicializando la base de datos");
+                _logger.LogError(ex, "Ocurrió un error inicializando la base de datos");
                 throw;
             }
         }

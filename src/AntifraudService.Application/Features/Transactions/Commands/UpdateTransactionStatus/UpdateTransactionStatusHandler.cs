@@ -22,12 +22,12 @@ public class UpdateTransactionStatusHandler
 
         if (transaction == null)
         {
-            throw new TransactionValidationException("TransacciÛn no encontrada."); // Update the exception type
+            throw new TransactionValidationException("Transacci√≥n no encontrada.");
         }
 
         if (!Enum.TryParse(request.Status, out TransactionStatus status))
         {
-            throw new TransactionValidationException("Estado de transacciÛn inv·lido.");
+            throw new TransactionValidationException("Estado de transacci√≥n inv√°lido.");
         }
 
         transaction.Status = status;

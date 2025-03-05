@@ -10,10 +10,6 @@ namespace AntifraudService.Infrastructure
     {
         public static void AddInfrastructureServices(this IServiceCollection services)
         {
-            // Database context is configured in Startup.cs's ConfigureDatabase method
-            // which handles multiple database providers
-
-            // Register repositories and services
             services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddSingleton<IMessageProducer, TransactionEventProducer>();
             services.AddSingleton<KafkaSettings>();
@@ -21,7 +17,7 @@ namespace AntifraudService.Infrastructure
 
         public static void AddApplicationServices(this IServiceCollection services)
         {
-            // Register application services here
+            
         }
     }
 }

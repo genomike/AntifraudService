@@ -22,9 +22,19 @@ namespace AntifraudService.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionDto transactionDto)
         {
-            var command = new CreateTransactionCommand(transactionDto.SourceAccountId, transactionDto.TargetAccountId, transactionDto.TransferTypeId, transactionDto.Value);
+            var command = new CreateTransactionCommand(
+                transactionDto.SourceAccountId, 
+                transactionDto.TargetAccountId, 
+                transactionDto.TransferTypeId, 
+                transactionDto.Value);
+            
             var result = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetTransaction), result);
+            
+            return CreatedAtAction(
+                nameof(GetTransaction),
+                new { id = result },
+                new { id = result }
+            );
         }
 
         [HttpGet("{id}")]

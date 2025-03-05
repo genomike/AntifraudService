@@ -49,7 +49,6 @@ namespace AntifraudService.Infrastructure.Messaging.Kafka.Consumers
 
         private async Task ProcessMessage(TransactionMessage message)
         {
-            // Logic to validate the transaction and update its status
             var transaction = await _transactionRepository.GetTransactionById(message.TransactionExternalId);
             if (transaction != null)
             {
@@ -65,13 +64,10 @@ namespace AntifraudService.Infrastructure.Messaging.Kafka.Consumers
 
         private TransactionStatus ValidateTransaction(Transaction transaction)
         {
-            // Implement validation logic based on criteria
             if (transaction.Value > 2000)
             {
                 return TransactionStatus.Rejected;
             }
-
-            // Additional logic for daily accumulated value can be added here
 
             return TransactionStatus.Approved;
         }

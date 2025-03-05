@@ -17,11 +17,9 @@ namespace AntifraudService.Infrastructure.Messaging.Kafka.Producers
             {
                 BootstrapServers = kafkaSettings.BootstrapServers,
                 ClientId = "antifraud-service",
-                Acks = Acks.All,
-                // Add these settings for better error handling
-                MessageSendMaxRetries = 3,
-                RetryBackoffMs = 1000,
-                EnableIdempotence = true
+                Acks = Acks.Leader,
+                MessageSendMaxRetries = 0,
+                EnableIdempotence = false
             };
 
             _topic = kafkaSettings.Topic;

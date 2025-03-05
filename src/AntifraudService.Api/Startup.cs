@@ -1,5 +1,6 @@
 using AntifraudService.Application.Common.Interfaces;
 using AntifraudService.Infrastructure;
+using AntifraudService.Infrastructure.Messaging.Kafka;
 using AntifraudService.Infrastructure.Persistence;
 using AntifraudService.Infrastructure.Persistence.Repositories;
 using MediatR;
@@ -26,44 +27,26 @@ namespace AntifraudService.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add application services
             services.AddApplicationServices();
-
-            // Configure database
             ConfigureDatabase(services);
-
-            // Add infrastructure services
             services.AddInfrastructureServices();
-
-            // Add controllers with options to allow trailing commas in JSON
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.AllowTrailingCommas = true;
                 });
 
-            // Register database initializer
             services.AddScoped<DatabaseInitializer>();
-
-            // Add MediatR - add this line
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Startup).Assembly));
-
-            // If your handlers are in other assemblies (like Application), add them too:
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(Startup).Assembly);
-                // Assuming you have a type in your Application project - replace with appropriate type
                 cfg.RegisterServicesFromAssembly(AppDomain.CurrentDomain.GetAssemblies()
                     .FirstOrDefault(a => a.FullName.Contains("AntifraudService.Application")));
             });
 
-            // Registra TransactionValidationService
             services.AddScoped<Application.Features.Antifraud.Services.TransactionValidationService>();
-
-            // Si aún no está registrado en tu configuración de servicios
             services.AddScoped<ITransactionRepository, TransactionRepository>();
-
-            // Add Swagger services
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
@@ -78,6 +61,16 @@ namespace AntifraudService.Api
                         Email = "genomikel@gmail.com"
                     }
                 });
+            });
+
+            services.AddSingleton(sp => 
+            {
+                var kafkaSettings = new KafkaSettings
+                {
+                    BootstrapServers = Configuration["Kafka:BootstrapServers"],
+                    Topic = Configuration["Kafka:Topic"]
+                };
+                return kafkaSettings;
             });
         }
 
@@ -95,8 +88,6 @@ namespace AntifraudService.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-
-                // Add Swagger UI for development environment
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {

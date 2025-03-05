@@ -12,7 +12,6 @@ public class Program
     {
         var host = CreateHostBuilder(args).Build();
 
-        // Initialize the database on startup
         using (var scope = host.Services.CreateScope())
         {
             var services = scope.ServiceProvider;

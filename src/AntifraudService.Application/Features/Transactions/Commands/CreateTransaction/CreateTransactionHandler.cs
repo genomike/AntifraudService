@@ -61,8 +61,7 @@ namespace AntifraudService.Application.Features.Transactions.Commands.CreateTran
                 });
             }
             catch (Exception ex) {
-                // Log the error but don't fail the transaction
-                _logger.LogError(ex, "Failed to produce Kafka message, but transaction was saved");
+                _logger.LogError(ex, "Hubieron errores produciendo el mensaje para Kafka, pero la transacción se guardo en la BD");
             }
 
             return transaction.Id;

@@ -29,7 +29,7 @@ namespace AntifraudService.Infrastructure.Persistence.Configurations
 
             builder.Property(t => t.Status)
                 .IsRequired()
-                .HasDefaultValue(TransactionStatus.Pending); // Añadido el valor por defecto
+                .HasDefaultValue(TransactionStatus.Pending);
 
             builder.Property(t => t.CreatedAt)
                 .IsRequired()
