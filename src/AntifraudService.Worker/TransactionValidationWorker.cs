@@ -2,15 +2,8 @@ using AntifraudService.Application.Common.Interfaces;
 using AntifraudService.Application.DTOs;
 using AntifraudService.Application.Features.Antifraud.Services;
 using AntifraudService.Domain.Entities;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace AntifraudService.Worker
 {
@@ -38,9 +31,9 @@ namespace AntifraudService.Worker
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Transaction Validation Worker starting at: {time}", DateTimeOffset.Now);
+            _logger.LogInformation("Worker para validar la transacción iniciando en: {time}", DateTimeOffset.Now);
 
-            await _messageConsumer.ConsumeAsync(async (message) => 
+            await _messageConsumer.ConsumeAsync(async (message) =>
             {
                 await ProcessMessageAsync(message);
             }, stoppingToken);
@@ -54,38 +47,31 @@ namespace AntifraudService.Worker
 
                 if (transactionMessage == null)
                 {
-                    _logger.LogWarning("Could not deserialize message");
+                    _logger.LogWarning("No se puede deserializar el mensaje");
                     return;
                 }
 
-                // Create a scope to resolve scoped services
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    // Resolve the scoped service within the scope
-                    var transactionRepository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
                     var validationService = scope.ServiceProvider.GetRequiredService<TransactionValidationService>();
-
-                    // Get transaction from database
-                    var transaction = await transactionRepository.GetTransactionById(transactionMessage.TransactionExternalId);
-                    
-                    if (transaction == null)
+                    var transaction = new Transaction
                     {
-                        _logger.LogWarning("Transaction not found: {id}", transactionMessage.TransactionExternalId);
-                        return;
-                    }
+                        Id = transactionMessage.TransactionExternalId,
+                        SourceAccountId = transactionMessage.SourceAccountId,
+                        Value = transactionMessage.Value,
+                        CreatedAt = transactionMessage.CreatedAt
+                    };
 
-                    // Validate transaction
                     var validationResult = await validationService.ValidateTransaction(transaction);
-                    _logger.LogInformation("Transaction {id} validation result: {result}", 
+                    _logger.LogInformation("Resultado de la validación de la transacción {id}: {result}",
                         transaction.Id, validationResult);
 
-                    // Update transaction status via API
                     await UpdateTransactionStatusAsync(transaction.Id, validationResult);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing message");
+                _logger.LogError(ex, "Error procesando el mensaje");
             }
         }
 
@@ -101,20 +87,20 @@ namespace AntifraudService.Worker
                 };
 
                 var response = await _httpClient.PutAsJsonAsync(endpoint, statusDto);
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("Failed to update transaction status: {statusCode}", response.StatusCode);
+                    _logger.LogError("Error actualizando el status de la transacción: {statusCode}", response.StatusCode);
                 }
                 else
                 {
-                    _logger.LogInformation("Successfully updated transaction {id} status to {status}", 
+                    _logger.LogInformation("Transacción actualizada satisfactoriamente {id} status a {status}",
                         transactionId, status);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating transaction status");
+                _logger.LogError(ex, "Error actualizando el estado de la transacción");
             }
         }
     }

@@ -25,7 +25,12 @@ namespace AntifraudService.Infrastructure.Messaging.Kafka.Consumers
                 BootstrapServers = _kafkaSettings.BootstrapServers,
                 GroupId = "transaction-validation-group",
                 AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnableAutoCommit = true
+                EnableAutoCommit = true,
+                SocketTimeoutMs = 10000,
+                SessionTimeoutMs = 30000,
+                MaxPollIntervalMs = 300000,
+                ReconnectBackoffMs = 1000,
+                ReconnectBackoffMaxMs = 10000
             };
 
             using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
