@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
+using AntifraudService.Application.DTOs;
 using AntifraudService.Application.Features.Transactions.Commands.CreateTransaction;
 using AntifraudService.Application.Features.Transactions.Queries.GetTransaction;
-using AntifraudService.Application.DTOs;
-using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 
 namespace AntifraudService.Api.Controllers
 {

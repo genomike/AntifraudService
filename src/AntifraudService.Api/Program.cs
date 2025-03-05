@@ -1,5 +1,7 @@
+using AntifraudService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace AntifraudService.Api;
@@ -11,12 +13,12 @@ public class Program
         var host = CreateHostBuilder(args).Build();
 
         // Initialize the database on startup
-        //using (var scope = host.Services.CreateScope())
-        //{
-        //    var services = scope.ServiceProvider;
-        //    var initializer = services.GetRequiredService<DatabaseInitializer>();
-        //    initializer.Initialize();
-        //}
+        using (var scope = host.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            var initializer = services.GetRequiredService<DatabaseInitializer>();
+            initializer.Initialize();
+        }
 
         host.Run();
     }

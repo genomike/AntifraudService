@@ -1,6 +1,6 @@
-using System;
 using AntifraudService.Application.DTOs;
 using MediatR;
+using System;
 
 namespace AntifraudService.Application.Features.Transactions.Queries.GetTransaction
 {

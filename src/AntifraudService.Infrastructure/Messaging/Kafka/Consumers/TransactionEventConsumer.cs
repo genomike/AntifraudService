@@ -1,5 +1,4 @@
 using AntifraudService.Application.Common.Interfaces;
-using AntifraudService.Application.Features.Transactions.Commands.UpdateTransactionStatus;
 using AntifraudService.Domain.Entities;
 using Confluent.Kafka;
 using System;

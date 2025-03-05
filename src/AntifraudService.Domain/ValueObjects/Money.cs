@@ -11,7 +11,7 @@ namespace AntifraudService.Domain.ValueObjects
         {
             if (amount < 0)
             {
-                throw new ArgumentException("Amount cannot be negative", nameof(amount));
+                throw new ArgumentException("El monto no puede ser negativo", nameof(amount));
             }
 
             Amount = amount;

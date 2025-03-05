@@ -1,8 +1,8 @@
-using System.Threading;
-using System.Threading.Tasks;
 using AntifraudService.Application.Common.Interfaces;
 using AntifraudService.Application.DTOs;
 using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AntifraudService.Application.Features.Transactions.Queries.GetTransaction
 {

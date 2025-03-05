@@ -1,10 +1,9 @@
+using AntifraudService.Application.Common.Interfaces;
+using AntifraudService.Application.Features.Transactions.Commands.UpdateTransactionStatus;
+using AntifraudService.Domain.Exceptions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AntifraudService.Application.Common.Interfaces;
-using AntifraudService.Application.Features.Transactions.Commands.UpdateTransactionStatus;
-using AntifraudService.Domain.Entities;
-using AntifraudService.Domain.Exceptions;
 
 public class UpdateTransactionStatusHandler
 {
@@ -23,12 +22,12 @@ public class UpdateTransactionStatusHandler
 
         if (transaction == null)
         {
-            throw new TransactionValidationException("Transaction not found."); // Update the exception type
+            throw new TransactionValidationException("Tranzacción no encontrada."); // Update the exception type
         }
 
         if (!Enum.TryParse(request.Status, out TransactionStatus status))
         {
-            throw new TransactionValidationException("Invalid transaction status.");
+            throw new TransactionValidationException("Estado de tranzacción inválido.");
         }
 
         transaction.Status = status;

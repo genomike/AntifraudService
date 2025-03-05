@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -18,26 +19,15 @@ namespace AntifraudService.Infrastructure.Persistence
         {
             try
             {
-                _logger.LogInformation("Creating database if it doesn't exist");
-
-                // This creates the database with the schema defined in your DbContext
+                _logger.LogInformation("Creando la base de datos si esta no existe");
                 _context.Database.EnsureCreated();
-
-                // You can add seed data here if needed
-                // SeedData();
-
-                _logger.LogInformation("Database initialization completed successfully");
+                _logger.LogInformation("Inicializaci�n de base de datos completada exitosamente");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while initializing the database");
+                _logger.LogError(ex, "Ocurri� un error inicializando la base de datos");
                 throw;
             }
         }
-
-        // private void SeedData()
-        // {
-        //     // Add initial data if needed
-        // }
     }
 }

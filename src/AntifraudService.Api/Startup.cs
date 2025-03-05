@@ -2,6 +2,7 @@ using AntifraudService.Infrastructure;
 using AntifraudService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,10 +38,12 @@ namespace AntifraudService.Api
 
         private void ConfigureDatabase(IServiceCollection services)
         {
+            var connectionString0 = Configuration.GetConnectionString("DefaultConnection");
+
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                //var connectionString = Configuration.GetConnectionString("DefaultConnection");
-                //options.UseNpgsql(connectionString);
+                var connectionString = Configuration.GetConnectionString("DefaultConnection");
+                options.UseNpgsql(connectionString);
             });
         }
 

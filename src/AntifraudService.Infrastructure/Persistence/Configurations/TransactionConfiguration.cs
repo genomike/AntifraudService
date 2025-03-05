@@ -1,6 +1,6 @@
+using AntifraudService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using AntifraudService.Domain.Entities;
 
 namespace AntifraudService.Infrastructure.Persistence.Configurations
 {

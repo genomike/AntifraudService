@@ -1,7 +1,5 @@
-using AntifraudService.Domain.Entities;
-using AntifraudService.Domain.Exceptions;
 using AntifraudService.Application.Common.Interfaces;
-using System;
+using AntifraudService.Domain.Entities;
 
 namespace AntifraudService.Application.Features.Antifraud.Services
 {
