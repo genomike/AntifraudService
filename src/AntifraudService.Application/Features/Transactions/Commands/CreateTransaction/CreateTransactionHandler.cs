@@ -4,20 +4,28 @@ using AntifraudService.Domain.Entities;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace AntifraudService.Application.Features.Transactions.Commands.CreateTransaction
 {
-    public class CreateTransactionHandler
+    public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, Guid>
     {
         private readonly ITransactionRepository _transactionRepository;
         private readonly IMessageProducer _messageProducer;
         private readonly TransactionValidationService _transactionValidationService;
+        private readonly ILogger<CreateTransactionCommandHandler> _logger;
 
-        public CreateTransactionHandler(ITransactionRepository transactionRepository, IMessageProducer messageProducer, TransactionValidationService transactionValidationService)
+        public CreateTransactionCommandHandler(
+            ITransactionRepository transactionRepository, 
+            IMessageProducer messageProducer, 
+            TransactionValidationService transactionValidationService,
+            ILogger<CreateTransactionCommandHandler> logger)
         {
             _transactionRepository = transactionRepository;
             _messageProducer = messageProducer;
             _transactionValidationService = transactionValidationService;
+            _logger = logger;
         }
 
         public async Task<Guid> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
@@ -29,12 +37,12 @@ namespace AntifraudService.Application.Features.Transactions.Commands.CreateTran
                 TargetAccountId = request.TargetAccountId,
                 TransferTypeId = request.TransferTypeId,
                 Value = request.Value,
-                Status = TransactionStatus.Pending
+                CreatedAt = DateTime.UtcNow
             };
 
-            _transactionRepository.AddTransaction(transaction);
+            await _transactionRepository.AddTransaction(transaction);
 
-            var isApproved = _transactionValidationService.ValidateTransaction(transaction);
+            var isApproved = await _transactionValidationService.ValidateTransaction(transaction);
             if (isApproved == TransactionStatus.Approved)
             {
                 transaction.Status = TransactionStatus.Approved;
@@ -45,11 +53,17 @@ namespace AntifraudService.Application.Features.Transactions.Commands.CreateTran
             }
 
             await _transactionRepository.UpdateTransaction(transaction);
-            await _messageProducer.ProduceAsync(new TransactionMessage
-            {
-                TransactionExternalId = transaction.Id,
-                Status = transaction.Status.ToString()
-            });
+            try {
+                await _messageProducer.Produce(new TransactionMessage
+                {
+                    TransactionExternalId = transaction.Id,
+                    Status = transaction.Status.ToString()
+                });
+            }
+            catch (Exception ex) {
+                // Log the error but don't fail the transaction
+                _logger.LogError(ex, "Failed to produce Kafka message, but transaction was saved");
+            }
 
             return transaction.Id;
         }

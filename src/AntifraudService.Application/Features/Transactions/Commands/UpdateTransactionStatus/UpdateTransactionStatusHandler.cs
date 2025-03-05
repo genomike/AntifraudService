@@ -18,22 +18,22 @@ public class UpdateTransactionStatusHandler
 
     public async Task Handle(UpdateTransactionStatusCommand request, CancellationToken cancellationToken)
     {
-        var transaction = await _transactionRepository.GetTransactionByIdAsync(request.TransactionExternalId);
+        var transaction = await _transactionRepository.GetTransactionById(request.TransactionExternalId);
 
         if (transaction == null)
         {
-            throw new TransactionValidationException("Tranzacción no encontrada."); // Update the exception type
+            throw new TransactionValidationException("Transacción no encontrada."); // Update the exception type
         }
 
         if (!Enum.TryParse(request.Status, out TransactionStatus status))
         {
-            throw new TransactionValidationException("Estado de tranzacción inválido.");
+            throw new TransactionValidationException("Estado de transacción inválido.");
         }
 
         transaction.Status = status;
 
         await _transactionRepository.UpdateTransaction(transaction);
-        await _messageProducer.ProduceAsync(new TransactionMessage
+        await _messageProducer.Produce(new TransactionMessage
         {
             TransactionExternalId = transaction.Id,
             Status = transaction.Status.ToString()

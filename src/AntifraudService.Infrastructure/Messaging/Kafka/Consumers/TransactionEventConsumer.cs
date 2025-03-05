@@ -50,11 +50,11 @@ namespace AntifraudService.Infrastructure.Messaging.Kafka.Consumers
         private async Task ProcessMessage(TransactionMessage message)
         {
             // Logic to validate the transaction and update its status
-            var transaction = await _transactionRepository.GetTransactionByIdAsync(message.TransactionExternalId);
+            var transaction = await _transactionRepository.GetTransactionById(message.TransactionExternalId);
             if (transaction != null)
             {
                 var status = ValidateTransaction(transaction);
-                await _messageProducer.ProduceAsync(
+                await _messageProducer.Produce(
                     new TransactionMessage
                     {
                         TransactionExternalId = transaction.Id,

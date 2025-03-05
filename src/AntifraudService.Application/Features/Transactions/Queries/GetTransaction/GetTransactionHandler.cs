@@ -17,7 +17,7 @@ namespace AntifraudService.Application.Features.Transactions.Queries.GetTransact
 
         public async Task<TransactionDto> Handle(GetTransactionQuery request, CancellationToken cancellationToken)
         {
-            var transaction = await _transactionRepository.GetTransactionByIdAsync(request.TransactionExternalId);
+            var transaction = await _transactionRepository.GetTransactionById(request.TransactionExternalId);
             if (transaction == null)
             {
                 return null;

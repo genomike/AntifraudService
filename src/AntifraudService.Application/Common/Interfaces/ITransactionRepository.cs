@@ -8,8 +8,6 @@ public interface ITransactionRepository
 {
     Task AddTransaction(Transaction transaction);
     Task UpdateTransaction(Transaction transaction);
-    Transaction GetTransactionById(Guid transactionId);
-    Task<Transaction> GetTransactionByIdAsync(Guid transactionId);
-    IEnumerable<Transaction> GetTransactionsByDate(DateTime date);
-    decimal GetDailyTotal(Guid sourceAccountId, DateTime date);
+    Task<Transaction> GetTransactionById(Guid transactionId);
+    Task<decimal> GetDailyTotal(Guid sourceAccountId, DateTime date);
 }

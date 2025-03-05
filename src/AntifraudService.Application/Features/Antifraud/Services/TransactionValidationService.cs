@@ -1,5 +1,6 @@
 using AntifraudService.Application.Common.Interfaces;
 using AntifraudService.Domain.Entities;
+using System.Threading.Tasks;
 
 namespace AntifraudService.Application.Features.Antifraud.Services
 {
@@ -12,14 +13,14 @@ namespace AntifraudService.Application.Features.Antifraud.Services
             _transactionRepository = transactionRepository;
         }
 
-        public TransactionStatus ValidateTransaction(Transaction transaction)
+        public async Task<TransactionStatus> ValidateTransaction(Transaction transaction)
         {
             if (transaction.Value > 2000)
             {
                 return TransactionStatus.Rejected;
             }
 
-            var dailyTotal = _transactionRepository.GetDailyTotal(transaction.SourceAccountId, transaction.CreatedAt.Date);
+            var dailyTotal = await _transactionRepository.GetDailyTotal(transaction.SourceAccountId, transaction.CreatedAt.Date);
             if (dailyTotal + transaction.Value > 20000)
             {
                 return TransactionStatus.Rejected;

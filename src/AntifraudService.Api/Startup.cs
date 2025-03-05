@@ -1,5 +1,7 @@
+using AntifraudService.Application.Common.Interfaces;
 using AntifraudService.Infrastructure;
 using AntifraudService.Infrastructure.Persistence;
+using AntifraudService.Infrastructure.Persistence.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,8 +35,12 @@ namespace AntifraudService.Api
             // Add infrastructure services
             services.AddInfrastructureServices();
 
-            // Add controllers
-            services.AddControllers();
+            // Add controllers with options to allow trailing commas in JSON
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.AllowTrailingCommas = true;
+                });
 
             // Register database initializer
             services.AddScoped<DatabaseInitializer>();
@@ -50,6 +56,12 @@ namespace AntifraudService.Api
                 cfg.RegisterServicesFromAssembly(AppDomain.CurrentDomain.GetAssemblies()
                     .FirstOrDefault(a => a.FullName.Contains("AntifraudService.Application")));
             });
+
+            // Registra TransactionValidationService
+            services.AddScoped<Application.Features.Antifraud.Services.TransactionValidationService>();
+
+            // Si aún no está registrado en tu configuración de servicios
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
 
             // Add Swagger services
             services.AddEndpointsApiExplorer();

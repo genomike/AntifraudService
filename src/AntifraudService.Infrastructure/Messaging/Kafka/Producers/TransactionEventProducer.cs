@@ -1,5 +1,6 @@
 using AntifraudService.Application.Common.Interfaces;
 using Confluent.Kafka;
+using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -8,26 +9,30 @@ namespace AntifraudService.Infrastructure.Messaging.Kafka.Producers
     public class TransactionEventProducer : IMessageProducer
     {
         private readonly IProducer<string, string> _producer;
+        private readonly string _topic;
 
         public TransactionEventProducer(KafkaSettings kafkaSettings)
         {
             var config = new ProducerConfig
             {
                 BootstrapServers = kafkaSettings.BootstrapServers,
-                Acks = Acks.All
+                ClientId = "antifraud-service",
+                Acks = Acks.All,
+                // Add these settings for better error handling
+                MessageSendMaxRetries = 3,
+                RetryBackoffMs = 1000,
+                EnableIdempotence = true
             };
 
-            _producer = new ProducerBuilder<string, string>(config).Build();
+            _topic = kafkaSettings.Topic;
+            _producer = new ProducerBuilder<string, string>(config)
+                .SetErrorHandler((_, e) => Console.WriteLine($"Kafka error: {e.Reason}"))
+                .Build();
         }
 
-        public void Produce(string topic, string message)
+        public Task Produce(TransactionMessage transactionMessage)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public Task ProduceAsync(TransactionMessage transactionMessage)
-        {
-            throw new System.NotImplementedException();
+            return ProduceTransactionEventAsync(transactionMessage);
         }
 
         public async Task ProduceTransactionEventAsync(TransactionMessage transactionMessage)
@@ -38,7 +43,7 @@ namespace AntifraudService.Infrastructure.Messaging.Kafka.Producers
                 Value = JsonSerializer.Serialize(transactionMessage)
             };
 
-            await _producer.ProduceAsync("transaction-events", message);
+            await _producer.ProduceAsync(_topic, message);
         }
     }
 }

@@ -10,6 +10,10 @@ namespace AntifraudService.Infrastructure.Persistence.Configurations
         {
             builder.HasKey(t => t.Id);
 
+            builder.Property(t => t.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .ValueGeneratedOnAdd();
+
             builder.Property(t => t.SourceAccountId)
                 .IsRequired();
 
@@ -24,7 +28,12 @@ namespace AntifraudService.Infrastructure.Persistence.Configurations
                 .HasColumnType("decimal(18,2)");
 
             builder.Property(t => t.Status)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValue(TransactionStatus.Pending); // Añadido el valor por defecto
+
+            builder.Property(t => t.CreatedAt)
+                .IsRequired()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP"); // También podemos hacer que CreatedAt se genere automáticamente
 
             builder.ToTable("Transactions");
         }
