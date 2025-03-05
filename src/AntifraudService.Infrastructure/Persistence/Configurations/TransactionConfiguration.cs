@@ -33,7 +33,7 @@ namespace AntifraudService.Infrastructure.Persistence.Configurations
 
             builder.Property(t => t.CreatedAt)
                 .IsRequired()
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                .HasDefaultValueSql("now() at time zone 'utc'");
 
             builder.ToTable("Transactions");
         }

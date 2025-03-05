@@ -17,8 +17,8 @@ namespace AntifraudService.Application.Features.Transactions.Commands.CreateTran
         private readonly ILogger<CreateTransactionCommandHandler> _logger;
 
         public CreateTransactionCommandHandler(
-            ITransactionRepository transactionRepository, 
-            IMessageProducer messageProducer, 
+            ITransactionRepository transactionRepository,
+            IMessageProducer messageProducer,
             TransactionValidationService transactionValidationService,
             ILogger<CreateTransactionCommandHandler> logger)
         {
@@ -51,14 +51,16 @@ namespace AntifraudService.Application.Features.Transactions.Commands.CreateTran
             }
 
             await _transactionRepository.UpdateTransaction(transaction);
-            try {
+            try
+            {
                 await _messageProducer.Produce(new TransactionMessage
                 {
                     TransactionExternalId = transaction.Id,
                     Status = transaction.Status.ToString()
                 });
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "Hubieron errores produciendo el mensaje para Kafka, pero la transacción se guardo en la BD");
             }
 

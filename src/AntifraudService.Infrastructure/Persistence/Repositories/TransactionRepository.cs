@@ -25,7 +25,9 @@ namespace AntifraudService.Infrastructure.Persistence.Repositories
         public async Task<decimal> GetDailyTotal(Guid sourceAccountId, DateTime date)
         {
             var transactions = await _context.Transactions
-                .Where(transaction => transaction.SourceAccountId == sourceAccountId && transaction.CreatedAt.Date == date.Date)
+                .Where(transaction => transaction.SourceAccountId == sourceAccountId 
+                                        && transaction.CreatedAt.Date == date.Date
+                                        && transaction.Status == TransactionStatus.Approved)
                 .ToListAsync();
 
             return transactions.Sum(transaction => transaction.Value);
