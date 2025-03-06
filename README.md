@@ -50,7 +50,7 @@ El Worker es un servicio en segundo plano que:
    dotnet build AntifraudService.sln
    ```
 
-3. **Ejecutar la Aplicación**: La aplicacion necesita que se ejecuten el API y el Worker al mismo tiempo.
+3. **Ejecutar la Aplicación con Visual Studio Code**: La aplicacion necesita que se ejecuten el API y el Worker al mismo tiempo.
 - Terminal 1 - Iniciar la API:
    ```bash
    cd src/AntifraudService.Api
@@ -61,7 +61,21 @@ El Worker es un servicio en segundo plano que:
    cd src/AntifraudService.Worker
    dotnet run
    ```
-**Nota**: Para la ejecución con dotnet run, asegúrate de tener PostgreSQL y Kafka ejecutándose localmente o modifica los archivos appsettings.Development.json para apuntar a tus servicios.
+
+4. **Ejecutar la Aplicación con Visual Studio Community**:
+La aplicación requiere que la API y el Worker se ejecuten simultáneamente.
+   1. Haga clic derecho en la solución en el Explorador de soluciones y seleccione **Propiedades**
+   2. En la ventana de propiedades, seleccione **Proyecto de inicio múltiple** en la sección de propiedades comunes
+   3. Configure los siguientes proyectos como "Iniciar":
+      - `AntifraudService.Api`
+      - `AntifraudService.Worker`
+   4. Haga clic en **Aplicar** y luego **Aceptar** para guardar la configuración
+   5. Presione **F5** o haga clic en el botón "Iniciar" para ejecutar la aplicación
+   6. Se abrirán dos ventanas de consola:
+      - Una mostrando los logs de la API
+      - Otra mostrando los logs del Worker
+
+**Nota**: Para la ejecución local con vscode o visual studio community, asegúrate de tener PostgreSQL y Kafka ejecutándose localmente o modifica los archivos appsettings.Development.json para apuntar a tus servicios.
 
 4. **Acceder a la API**: La API estará disponible en `http://localhost:58809/swagger`.
 
