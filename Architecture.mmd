@@ -1,0 +1,91 @@
+flowchart TB
+    Client([Client Application]) --> API
+    
+    subgraph "AntifraudService.Api Microservice"
+        API[TransactionsController] --> Commands
+        Commands --> Handlers
+        Handlers --> Repositories
+        Repositories --> DbContext
+    end
+    
+    subgraph "AntifraudService.Worker Microservice"
+        KafkaConsumer[TransactionEventConsumer] --> ProcessMessage
+        ProcessMessage[ProcessMessageAsync] --> ValidationServiceWorker[TransactionValidationService]
+        ValidationServiceWorker --> HttpClient
+        HttpClient --> API
+    end
+    
+    subgraph "Domain Layer"
+        Transaction[Transaction Entity]
+        TransactionStatus[TransactionStatus Enum]
+        DomainExceptions[Domain Exceptions]
+    end
+    
+    subgraph "Application Layer"
+        CreateTransactionCommand
+        UpdateTransactionStatusCommand
+        GetTransactionQuery
+        ValidationService[TransactionValidationService]
+        ITransactionRepository
+        IMessageProducer
+        IMessageConsumer
+    end
+    
+    subgraph "Infrastructure Layer"
+        KafkaProducer[TransactionEventProducer]
+        TransactionRepo[TransactionRepository]
+        Persistence[ApplicationDbContext]
+    end
+    
+    subgraph "External Systems"
+        PostgreSQL[(PostgreSQL Database)]
+        Kafka[("Kafka Message Broker")]
+    end
+    
+    %% API Flow
+    Handlers --> ValidationService
+    Handlers --> KafkaProducer
+    KafkaProducer --> Kafka
+    Repositories --> Persistence
+    Persistence --> PostgreSQL
+    
+    %% Worker Flow
+    Kafka --> KafkaConsumer
+    
+    %% Transaction Creation Flow
+    Client --"1 POST /api/transactions"--> API
+    API --"2 CreateTransactionCommand"--> CreateTransactionCommand
+    CreateTransactionCommand --"3 Handle\(\)"-->Handlers
+    Handlers --"4 Store Transaction"--> Repositories
+    Repositories --"5 Save to DB"--> PostgreSQL
+    Handlers --"6 Produce Message"--> KafkaProducer
+    KafkaProducer --"7 Publish Event"--> Kafka
+    
+    %% Transaction Validation Flow
+    Kafka --"8 Consume Event"--> KafkaConsumer
+    KafkaConsumer --"9 Process Message"--> ValidationServiceWorker
+    ValidationServiceWorker --"10 Validate Business Rules"--> ValidationServiceWorker
+    HttpClient --"11 PUT api\/transactions\/\{id\}\status"--> API
+    API --"12 UpdateTransactionStatusCommand"--> UpdateTransactionStatusCommand
+    UpdateTransactionStatusCommand --"13 Update Status"--> PostgreSQL
+    
+    %% Data Access
+    ValidationService --> ITransactionRepository
+    TransactionRepo --> ITransactionRepository
+    
+    %% Messaging
+    KafkaProducer --> IMessageProducer
+    KafkaConsumer --> IMessageConsumer
+    
+    classDef microservice fill:#b8860b,stroke:#333,stroke-width:2px,color:white;
+    classDef domain fill:#228b22,stroke:#333,stroke-width:2px,color:white;
+    classDef application fill:#0066cc,stroke:#333,stroke-width:2px,color:white;
+    classDef infrastructure fill:#b34700,stroke:#333,stroke-width:2px,color:white;
+    classDef external fill:#555555,stroke:#333,stroke-width:2px,color:white;
+    
+    class API,Commands,Handlers microservice;
+    class KafkaConsumer,ProcessMessage,ValidationServiceWorker,HttpClient microservice;
+    class Transaction,TransactionStatus,DomainExceptions domain;
+    class CreateTransactionCommand,UpdateTransactionStatusCommand,GetTransactionQuery,ValidationService,ITransactionRepository,IMessageProducer,IMessageConsumer application;
+    class KafkaProducer,TransactionRepo,Persistence infrastructure;
+    class PostgreSQL,Kafka external;
