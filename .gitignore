@@ -110,3 +110,4 @@ Migrations/*.Designer.cs
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.lnk
